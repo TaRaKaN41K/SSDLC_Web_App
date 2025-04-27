@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
+import UserCard from '../components/UserCard'; // Компонент карточки пользователя
 
 interface User {
   username: string;
@@ -15,7 +16,8 @@ const HomePage = () => {
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [totalUsers, setTotalUsers] = useState(0);
-  const limit = 3; // Количество пользователей на страницу
+  const [selectedUserIndex, setSelectedUserIndex] = useState<number | null>(null); // Состояние для выбранной карточки
+  const limit = 8; // Количество пользователей на страницу (обновлено для плитки)
 
   const fetchUsers = async (page: number) => {
     setLoading(true);
@@ -23,7 +25,7 @@ const HomePage = () => {
       const response = await api.get(`/user/get_all_users`, {
         params: {
           page,
-          limit, 
+          limit,
         },
       });
 
@@ -52,11 +54,19 @@ const HomePage = () => {
     }
   };
 
+  const handleCardClick = (index: number) => {
+    if (selectedUserIndex === index) {
+      setSelectedUserIndex(null); // Если кликаем на уже выбранную карточку, сбрасываем выбор
+    } else {
+      setSelectedUserIndex(index); // Выбираем новую карточку
+    }
+  };
+
   // Функция для формирования URL фото
   const getPhotoUrl = (photo_filename: string) => {
     return photo_filename
       ? `${api.defaults.baseURL}/uploads/${photo_filename}`
-      : '/default-avatar.png';  // Путь к дефолтному фото
+      : '/default-avatar.png'; // Путь к дефолтному фото
   };
 
   if (loading && page === 1) {
@@ -69,50 +79,51 @@ const HomePage = () => {
 
   return (
     <div className="p-4 mb-20">
-      <h1 className="text-xl font-bold">Список пользователей</h1>
+      <h1 className="text-xl font-bold text-center mb-6">Список пользователей</h1>
 
-      <div className="mt-4">
+      {/* Отображаем пользователей в плитке */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {users.map((user, index) => (
-          <div key={index} className="p-4 border-b">
-            {user.photo_filename ? (
-              <img
-                src={getPhotoUrl(user.photo_filename)}
-                alt={user.username}
-                className="w-12 h-12 rounded-full"
+          <div
+            key={index}
+            className={`transition-all duration-500 transform perspective-1000 ${
+              selectedUserIndex === index
+                ? 'scale-110 z-50 rotate-y-180' // Переворачиваем выбранную карточку
+                : 'opacity-100' // Все остальные карточки без размытия
+            } ${selectedUserIndex !== null && selectedUserIndex !== index ? 'opacity-70 blur-sm' : ''}`} // Размываем все карточки, кроме выбранной
+            onClick={() => handleCardClick(index)} // Обработчик клика
+          >
+            <div
+              className={`card-inner ${selectedUserIndex === index ? 'rotate-y-180' : ''} transition-transform duration-500`}
+            >
+              <UserCard
+                username={user.username}
+                email={user.email}
+                photoFilename={user.photo_filename}
               />
-            ) : (
-              <img
-                src="/default-avatar.png"  // Путь к дефолтной иконке
-                alt="default"
-                className="w-12 h-12 rounded-full"
-              />
-            )}
-            <div>
-              <strong>{user.username}</strong>
             </div>
-            <div>{user.email}</div>
           </div>
         ))}
       </div>
 
-      {/* Кнопки навигации с фиксированным положением */}
-      <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 flex justify-between w-full max-w-md">
+      {/* Кнопки навигации */}
+      <div className="flex justify-between mt-6">
         <button
           onClick={handlePrevPage}
           disabled={page === 1}
-          className="bg-blue-500 text-white px-4 py-2 rounded w-1/3"
+          className="bg-blue-500 text-white px-4 py-2 rounded"
         >
           &#8593;
         </button>
 
-        <span className="self-center text-center w-1/3">
-          {page} / {Math.ceil(totalUsers / limit)}
+        <span className="self-center">
+          Страница {page} / {Math.ceil(totalUsers / limit)}
         </span>
 
         <button
           onClick={handleNextPage}
           disabled={page === Math.ceil(totalUsers / limit)}
-          className="bg-blue-500 text-white px-4 py-2 rounded w-1/3"
+          className="bg-blue-500 text-white px-4 py-2 rounded"
         >
           &#8595;
         </button>

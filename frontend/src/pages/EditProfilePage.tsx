@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-
 import api from '../api/axios';
 import qs from 'qs'; 
+import CustomInput from '../components/CustomInput';
+import CustomButton from '../components/CustomButton';
+import ErrorAlert from '../components/ErrorAlert';
 
-const EditProfilePage = () => {
+const EditProfilePage: React.FC = () => {
   const [email, setEmail] = useState('');
-  const [photoFile, setPhotoFile] = useState<File | null>(null); // состояние для фото
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const navigate = useNavigate();
 
@@ -24,31 +26,27 @@ const EditProfilePage = () => {
     fetchProfile();
   }, []);
 
-  // Функция для обработки изменения фото
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files ? e.target.files[0] : null;
     if (file) {
-      setPhotoFile(file); // Обновляем состояние с выбранным файлом
+      setPhotoFile(file);
     }
   };
 
   const handleSave = async () => {
-    // Создаем FormData
     const formData = new FormData();
     if (photoFile) {
-      formData.append('photo_file', photoFile); // Добавляем файл в FormData
+      formData.append('photo_file', photoFile);
     }
 
-    // Формируем query параметры для email
     const queryParams = qs.stringify({
       email,
     });
 
     try {
-      // Отправляем запрос с FormData и query параметрами
       await api.post(`/user/edit_profile?${queryParams}`, formData, {
         headers: {
-          'Content-Type': 'multipart/form-data', // Указываем правильный тип
+          'Content-Type': 'multipart/form-data',
         },
       });
       navigate('/user');
@@ -59,35 +57,46 @@ const EditProfilePage = () => {
   };
 
   return (
-    <div className="p-4 max-w-md mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Редактирование профиля</h1>
+    <div className="p-6 max-w-md mx-auto bg-white rounded-lg shadow-lg border border-gray-200 mt-16 space-y-4">
+      <h1 className="text-2xl font-semibold mb-6 text-center text-gray-800">Редактирование профиля</h1>
 
-      {errorMessage && <p className="text-red-500 mb-2">{errorMessage}</p>}
+      {errorMessage && <ErrorAlert message={errorMessage} size="medium" />}
 
-      <input
-        className="border p-2 w-full mb-2"
+      <CustomInput
         type="email"
         placeholder="Email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
+        size="medium"
+        rounded={true}
       />
 
-      <div className="mb-4">
-        <label className="block mb-2">Фото профиля</label>
+      <div className="mb-6">
+        <label htmlFor="photo_file" className="block mb-2 text-sm text-gray-600">Фото профиля</label>
         <input
+          id="photo_file"
           type="file"
           accept="image/*"
-          onChange={handlePhotoChange} // Обработчик для фото
-          className="border p-2 w-full"
+          onChange={handlePhotoChange}
+          className="border p-2 w-full rounded-md"
         />
       </div>
 
-      <button
+      <CustomButton
         onClick={handleSave}
-        className="bg-blue-500 text-white px-4 py-2 rounded w-full"
-      >
-        Сохранить
-      </button>
+        text="Сохранить"
+        size="medium"
+        color="blue"
+        loading={false}
+      />
+
+      <div className="mt-4 text-center">
+        <p className="text-sm text-gray-700">
+          <a href="/user" className="text-blue-500 hover:underline">
+            Назад к профилю
+          </a>
+        </p>
+      </div>
     </div>
   );
 };

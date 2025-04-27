@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import qs from 'qs'; 
+import qs from 'qs';
+import api from '../api/axios';
+import { handleError } from '../utils/error_handler';
+import CustomInput from '../components/CustomInput';
+import CustomButton from '../components/CustomButton';
+import ErrorAlert from '../components/ErrorAlert';
 
-import api from '../api/axios'; 
-
-const RegisterPage = () => {
+const RegisterPage: React.FC = () => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -13,9 +16,14 @@ const RegisterPage = () => {
   const [photo, setPhoto] = useState<File | null>(null);
   const navigate = useNavigate();
 
+  
   const handleRegister = async () => {
     if (password !== confirmPassword) {
       setErrorMessage('Пароли не совпадают');
+      return;
+    }
+    else if (!username || !password || !email || !confirmPassword) {
+      setErrorMessage('Введите все поля');
       return;
     }
 
@@ -32,11 +40,9 @@ const RegisterPage = () => {
     }
 
     try {
-      const res = await 
-      api.post(`/user/create_account?${queryParams}`,
-        formData,
-        {headers: {'Content-Type': 'application/x-www-form-urlencoded'},}
-      );
+      const res = await api.post(`/user/create_account?${queryParams}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
       navigate('/login');
     } catch (err: any) {
       console.error('Registration error:', err?.response?.data || err);
@@ -57,62 +63,63 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className="p-4 max-w-md mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Регистрация</h1>
+    <div className="p-6 max-w-md mx-auto bg-white rounded-lg shadow-lg border border-gray-200 mt-16 space-y-4">
+      <h1 className="text-2xl font-bold mb-6 text-center text-gray-800">Регистрация</h1>
 
-      {errorMessage && <p className="text-red-500">{errorMessage}</p>}
+      {errorMessage && <ErrorAlert message={errorMessage} size="medium"/>}
 
-      <input
-        className="border p-2 w-full mb-2"
+      <CustomInput
         type="text"
         placeholder="Логин"
         value={username}
         onChange={(e) => setUsername(e.target.value)}
+        size="medium"
+        rounded={true}
       />
-      <input
-        className="border p-2 w-full mb-2"
+      <CustomInput
         type="email"
         placeholder="Email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
+        size="medium"
+        rounded={true}
       />
-      <input
-        className="border p-2 w-full mb-2"
+      <CustomInput
         type="password"
         placeholder="Пароль"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         autoComplete="new-password"
+        icon={true}
+        rounded={true}
+        size="medium"
       />
-      <input
-        className="border p-2 w-full mb-4"
+      <CustomInput
         type="password"
         placeholder="Подтверждение пароля"
         value={confirmPassword}
         onChange={(e) => setConfirmPassword(e.target.value)}
         autoComplete="new-password"
+        icon={true}
+        rounded={true}
+        size="medium"
       />
 
-      <div className="mb-4">
-        <label htmlFor="photo_file" className="block mb-2">Загрузите фото</label>
+      <div className="mb-6">
+        <label htmlFor="photo_file" className="block mb-2 text-sm text-gray-600">Загрузите фото</label>
         <input
           id="photo_file"
-          className="border p-2 w-full"
+          className="border p-2 w-full rounded-md"
           type="file"
           accept="image/*"
           onChange={handlePhotoChange}
         />
       </div>
 
-      <button
-        onClick={handleRegister}
-        className="bg-blue-500 text-white px-4 py-2 rounded w-full"
-      >
-        Зарегистрироваться
-      </button>
+      <CustomButton onClick={handleRegister} text="Зарегистрироваться" size="medium" color="blue" loading={false} />
 
       <div className="mt-4 text-center">
-        <p>
+        <p className="text-sm text-gray-700">
           Уже есть аккаунт?{' '}
           <a href="/login" className="text-blue-500 hover:underline">
             Войти
