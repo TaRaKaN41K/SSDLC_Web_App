@@ -3,9 +3,9 @@ from pydantic import BaseModel
 from pydantic_settings import BaseSettings
 from fastapi.security import HTTPBearer
 
-BASE_DIR = Path(__file__).parent.parent
+BASE_DIR = Path(__file__).parent.parent.parent
 
-UPLOAD_DIR = BASE_DIR / "upload"
+UPLOAD_DIR = BASE_DIR / "uploads"
 ALLOWED_EXTENSIONS = {'.jpg', '.jpeg', '.png'}
 
 http_bearer = HTTPBearer(auto_error=False)

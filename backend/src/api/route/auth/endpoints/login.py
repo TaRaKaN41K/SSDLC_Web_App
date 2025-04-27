@@ -11,6 +11,7 @@ from api.utils import (
     get_device_id,
 )
 from api.depends import validate_auth_user
+from logger import loggers
 
 
 async def login(
@@ -38,8 +39,8 @@ async def login(
         key="refresh_token",
         value=refresh,
         httponly=True,
-        secure=False,
-        samesite="strict",
+        secure=True,
+        samesite="none",
         path="/auth/regenerate_access",
         max_age=60 * 60 * 24 * 7
     )

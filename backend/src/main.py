@@ -2,6 +2,7 @@ from fastapi import FastAPI
 import uvicorn
 import os
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from api.route import auth, user
 from exceptions import app_http_exception_handler
@@ -24,6 +25,8 @@ app.add_middleware(
 
 app.include_router(auth.router, tags=['Auth'])
 app.include_router(user.router, tags=['User'])
+
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 
 if __name__ == '__main__':

@@ -31,16 +31,18 @@ async def upload_photo(photo_file: UploadFile) -> str:
         return new_filename
 
     except Exception as e:
-        raise FileUploadError(f"Не удалось загрузить файл: {str(e)}")
-
-    finally:
         if os.path.exists(file_location):
             try:
                 await aiofiles.os.remove(file_location)
-                loggers['utils'].info(f"Поврежденный файл удален: {file_location}")
+                loggers['utils'].info(
+                    f"Неудачно загруженный файл удален: {file_location}")
             except Exception as cleanup_error:
-                loggers['utils'].exception(f"Ошибка при удалении поврежденного файла: {str(cleanup_error)}")
-                raise FileUploadError(f"Ошибка при удалении поврежденного файла: {str(cleanup_error)}")
+                loggers['utils'].exception(
+                    f"Ошибка при удалении поврежденного файла: {str(cleanup_error)}")
+                raise FileUploadError(
+                    f"Ошибка при удалении поврежденного файла: {str(cleanup_error)}")
+
+        raise FileUploadError(f"Не удалось загрузить файл: {str(e)}")
 
 
 async def delete_photo_file(photo_filename: str) -> bool:
