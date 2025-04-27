@@ -4,9 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import qs from 'qs'; 
 
-
 const EditProfilePage = () => {
   const [email, setEmail] = useState('');
+  const [photoFile, setPhotoFile] = useState<File | null>(null); // состояние для фото
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const navigate = useNavigate();
 
@@ -24,13 +24,33 @@ const EditProfilePage = () => {
     fetchProfile();
   }, []);
 
-  const queryParams = qs.stringify({
-        email,
-      });
+  // Функция для обработки изменения фото
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files ? e.target.files[0] : null;
+    if (file) {
+      setPhotoFile(file); // Обновляем состояние с выбранным файлом
+    }
+  };
 
   const handleSave = async () => {
+    // Создаем FormData
+    const formData = new FormData();
+    if (photoFile) {
+      formData.append('photo_file', photoFile); // Добавляем файл в FormData
+    }
+
+    // Формируем query параметры для email
+    const queryParams = qs.stringify({
+      email,
+    });
+
     try {
-      await api.post(`/user/edit_profile?${queryParams}`);
+      // Отправляем запрос с FormData и query параметрами
+      await api.post(`/user/edit_profile?${queryParams}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data', // Указываем правильный тип
+        },
+      });
       navigate('/user');
     } catch (err) {
       console.error('Ошибка при сохранении профиля:', err);
@@ -51,6 +71,16 @@ const EditProfilePage = () => {
         value={email}
         onChange={(e) => setEmail(e.target.value)}
       />
+
+      <div className="mb-4">
+        <label className="block mb-2">Фото профиля</label>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handlePhotoChange} // Обработчик для фото
+          className="border p-2 w-full"
+        />
+      </div>
 
       <button
         onClick={handleSave}

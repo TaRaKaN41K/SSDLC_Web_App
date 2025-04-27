@@ -8,7 +8,7 @@ import { getToken, removeToken } from '../auth/auth';
 interface User {
   username: string;
   email: string;
-  photo_filename: number;
+  photo_filename: string;
 }
 
 const UserPage = () => {
@@ -62,14 +62,30 @@ const UserPage = () => {
     }
   }, []);
 
+    const getPhotoUrl = (photo_filename: string) => {
+    return photo_filename ? `${api.defaults.baseURL}/uploads/${photo_filename}`: '/default-avatar.png';
+  };
+
   return (
     <div className="p-4">
       <h1 className="text-xl font-bold">Добро пожаловать!</h1>
       {user ? (
         <div>
+          {user.photo_filename ? (
+            <img
+              src={getPhotoUrl(user.photo_filename)}
+              alt="Фото пользователя"
+              className="w-32 h-32 object-cover rounded-full"
+            />
+          ) : (
+            <img
+                src="/default-avatar.png" // Путь к дефолтной иконке
+                alt="default"
+                className="w-12 h-12 rounded-full"
+             />
+          )}
           <p>Вы вошли как: {user.username}</p>
           <p>Email: {user.email}</p>
-          <p>Фото: {user.photo_filename}</p>
 
           <div className="flex flex-col gap-2 mt-4">
             <Link

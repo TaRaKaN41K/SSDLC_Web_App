@@ -10,6 +10,7 @@ const RegisterPage = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [photo, setPhoto] = useState<File | null>(null); // состояние для фото
   const navigate = useNavigate();
 
   const handleRegister = async () => {
@@ -24,10 +25,14 @@ const RegisterPage = () => {
       password,
     });
 
+    // Создаём FormData для файла
+    const formData = new FormData();
+    formData.append('photo_file', photo); // добавляем фото в FormData
+
     try {
       const res = await 
       api.post(`/user/create_account?${queryParams}`,
-        {}, 
+        formData,
         {headers: {'Content-Type': 'application/x-www-form-urlencoded'},}
       );
 
@@ -44,7 +49,13 @@ const RegisterPage = () => {
     }
   };
 
-  return (
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setPhoto(e.target.files[0]); // сохраняем выбранный файл
+    }
+  };
+
+    return (
     <div className="p-4 max-w-md mx-auto">
       <h1 className="text-2xl font-bold mb-4">Регистрация</h1>
 
@@ -80,7 +91,18 @@ const RegisterPage = () => {
         onChange={(e) => setConfirmPassword(e.target.value)}
         autoComplete="new-password"
       />
-      
+
+      <div className="mb-4">
+        <label htmlFor="photo_file" className="block mb-2">Загрузите фото</label>
+        <input
+          id="photo_file"
+          className="border p-2 w-full"
+          type="file"
+          accept="image/*"
+          onChange={handlePhotoChange}
+        />
+      </div>
+
       <button
         onClick={handleRegister}
         className="bg-blue-500 text-white px-4 py-2 rounded w-full"

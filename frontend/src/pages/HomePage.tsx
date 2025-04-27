@@ -62,6 +62,11 @@ const HomePage = () => {
     return <div>{error}</div>;
   }
 
+  // Функция для формирования URL фото
+  const getPhotoUrl = (photo_filename: string) => {
+    return photo_filename ? `${api.defaults.baseURL}/uploads/${photo_filename}`: '/default-avatar.png'; // Путь к дефолтному фото
+  };
+
   return (
     <div className="p-4">
       <h1 className="text-xl font-bold">Список пользователей</h1>
@@ -69,10 +74,16 @@ const HomePage = () => {
       <ul className="mt-4">
         {users.map((user, index) => (
           <li key={index} className="p-4 border-b">
-            {user.photo_filename && (
+            {user.photo_filename ? (
               <img
-                src={user.photo_filename}
+                src={getPhotoUrl(user.photo_filename)}
                 alt={user.username}
+                className="w-12 h-12 rounded-full"
+              />
+            ) : (
+              <img
+                src="/default-avatar.png" // Путь к дефолтной иконке
+                alt="default"
                 className="w-12 h-12 rounded-full"
               />
             )}

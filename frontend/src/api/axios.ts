@@ -19,11 +19,16 @@ api.interceptors.response.use(
     const originalRequest = error.config;
     console.assert(error.response?.data?.error_code)
 
-    if (error.response?.status === 401 && error.response?.data?.error_code == 4003 && !originalRequest._retry) {
+    if (error.response?.status === 401 &&
+        error.response?.data?.error_code === 4003 &&
+         !originalRequest._retry) {
       originalRequest._retry = true;
 
       try {
-        const refreshResponse = await api.post('/auth/regenerate_access');
+        const refreshResponse = await api.post(
+            '/auth/regenerate_access',
+             {},
+             {withCredentials: true})
         const newAccessToken = refreshResponse.data.access_token;
 
         localStorage.setItem('access_token', newAccessToken);
