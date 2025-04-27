@@ -1,0 +1,1 @@
+from .exception_handler import app_http_exception_handler
