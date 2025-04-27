@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 
 import api from '../api/axios';
 import { getToken, removeToken } from '../auth/auth';
-
+import { handleError } from '../utils/error_handler';  // Импортируем обработчик ошибок
 
 interface User {
   username: string;
@@ -13,6 +13,7 @@ interface User {
 
 const UserPage = () => {
   const [user, setMe] = useState<User | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null); // Состояние для ошибки
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -20,12 +21,12 @@ const UserPage = () => {
 
     if (token) {
       try {
-        await api.get('/auth/logout',);
+        await api.get('/auth/logout');
         removeToken();
         navigate('/login');
       } catch (err) {
         console.error('Error logging out:', err);
-        alert('Ошибка при выходе');
+        setErrorMessage('Ошибка при выходе');
       }
     }
   };
@@ -35,12 +36,12 @@ const UserPage = () => {
 
     if (token) {
       try {
-        await api.delete('/user/delete_account',);
+        await api.delete('/user/delete_account');
         removeToken();
         navigate('/register');
       } catch (err) {
         console.error('Error deleting account:', err);
-        alert('Ошибка при удалении аккаунта');
+        setErrorMessage('Ошибка при удалении аккаунта');
       }
     }
   };
@@ -49,27 +50,39 @@ const UserPage = () => {
     const token = getToken();
 
     if (token) {
-      api.get('/user/me',)
+      api.get('/user/me')
         .then((res) => {
           setMe(res.data);
         })
         .catch((err) => {
           console.error('Error fetching user data:', err);
-          setMe(null);
+          // В случае ошибки используем обработчик ошибок
+          const errorText = handleError(err);
+          setErrorMessage(errorText);  // Устанавливаем ошибку
+          setMe(null);  // Обнуляем данные пользователя
         });
     } else {
-      setMe(null);
+      setMe(null);  // Если токен отсутствует, сбрасываем данные пользователя
     }
-  }, []);
+  }, [navigate]);
 
-    const getPhotoUrl = (photo_filename: string) => {
-    return photo_filename ? `${api.defaults.baseURL}/uploads/${photo_filename}`: '/default-avatar.png';
+  const getPhotoUrl = (photo_filename: string) => {
+    return photo_filename ? `${api.defaults.baseURL}/uploads/${photo_filename}` : '/default-avatar.png';
   };
 
   return (
     <div className="p-4">
       <h1 className="text-xl font-bold">Добро пожаловать!</h1>
-      {user ? (
+
+      {/* Если ошибка, показываем её */}
+      {errorMessage && (
+        <div className="text-red-500 mb-4">
+          <strong>{errorMessage}</strong>
+        </div>
+      )}
+
+      {/* Если данные пользователя получены */}
+      {user && (
         <div>
           {user.photo_filename ? (
             <img
@@ -79,10 +92,10 @@ const UserPage = () => {
             />
           ) : (
             <img
-                src="/default-avatar.png" // Путь к дефолтной иконке
-                alt="default"
-                className="w-12 h-12 rounded-full"
-             />
+              src="/default-avatar.png"
+              alt="default"
+              className="w-12 h-12 rounded-full"
+            />
           )}
           <p>Вы вошли как: {user.username}</p>
           <p>Email: {user.email}</p>
@@ -110,11 +123,10 @@ const UserPage = () => {
             </button>
           </div>
         </div>
-      ) : (
-        <p>Не удалось получить данные пользователя.</p>
       )}
     </div>
   );
 };
 
 export default UserPage;
+

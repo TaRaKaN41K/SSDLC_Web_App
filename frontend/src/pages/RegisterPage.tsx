@@ -10,7 +10,7 @@ const RegisterPage = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [photo, setPhoto] = useState<File | null>(null); // состояние для фото
+  const [photo, setPhoto] = useState<File | null>(null);
   const navigate = useNavigate();
 
   const handleRegister = async () => {
@@ -27,7 +27,9 @@ const RegisterPage = () => {
 
     // Создаём FormData для файла
     const formData = new FormData();
-    formData.append('photo_file', photo); // добавляем фото в FormData
+    if (photo) {
+      formData.append('photo_file', photo);
+    }
 
     try {
       const res = await 
@@ -35,12 +37,11 @@ const RegisterPage = () => {
         formData,
         {headers: {'Content-Type': 'application/x-www-form-urlencoded'},}
       );
-
-      alert('Регистрация прошла успешно. Пожалуйста, войдите.');
       navigate('/login');
     } catch (err: any) {
       console.error('Registration error:', err?.response?.data || err);
 
+      // Если ошибка приходит от сервера с сообщением
       if (err?.response?.data?.msg) {
         setErrorMessage(err.response.data.msg);
       } else {
@@ -51,11 +52,11 @@ const RegisterPage = () => {
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      setPhoto(e.target.files[0]); // сохраняем выбранный файл
+      setPhoto(e.target.files[0]);
     }
   };
 
-    return (
+  return (
     <div className="p-4 max-w-md mx-auto">
       <h1 className="text-2xl font-bold mb-4">Регистрация</h1>
 
