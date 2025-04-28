@@ -10,17 +10,18 @@ const App = () => {
   return (
     <BrowserRouter>
       <Header />
-        <main>
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route path="/user" element={<UserPage />} />
-            <Route path="/edit-profile" element={<EditProfilePage />} />
-          </Routes>
-        </main>
+      <main className="pt-20 px-4">
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/user" element={<UserPage />} />
+          <Route path="/edit-profile" element={<EditProfilePage />} />
+        </Routes>
+      </main>
     </BrowserRouter>
   );
 };
+
 
 export default App;

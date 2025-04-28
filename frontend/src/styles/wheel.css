@@ -1,0 +1,70 @@
+/* wheel.css */
+
+/* Контейнер для колесика */
+.wheel-container {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+  }
+  
+  /* Стиль для самого колеса */
+  .wheel {
+    position: absolute;
+    font-size: 1rem; /* Уменьшили размер шрифта */
+    font-weight: bold;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+  }
+  
+  .wheel-up,
+  .wheel-down {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  
+  .wheel-up-transition,
+  .wheel-down-transition {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  
+  /* Анимация для прокручивания */
+  @keyframes spinUp {
+    0% {
+      transform: translateY(100%);
+    }
+    50% {
+      transform: translateY(-50%);
+    }
+    100% {
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes spinDown {
+    0% {
+      transform: translateY(-100%);
+    }
+    50% {
+      transform: translateY(50%);
+    }
+    100% {
+      transform: translateY(0);
+    }
+  }
+  
+  /* Анимации для отображения в зависимости от направления */
+  .wheel-up-transition {
+    animation: spinUp 0.6s ease-in-out forwards;
+  }
+  
+  .wheel-down-transition {
+    animation: spinDown 0.6s ease-in-out forwards;
+  }
+  

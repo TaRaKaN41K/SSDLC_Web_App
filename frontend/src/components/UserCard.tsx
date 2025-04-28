@@ -1,14 +1,14 @@
 import React from 'react';
 import api from '../api/axios';
-import IconButton from './IconButton'; // Импортируем компонент иконок
+import IconButton from './IconButton';
 
 interface UserCardProps {
   username: string;
   email: string;
   photoFilename: string;
-  onLogout?: () => void; // Функция для выхода
-  onDeleteAccount?: () => void; // Функция для удаления аккаунта
-  onEditProfile?: () => void; // Функция для редактирования профиля
+  onLogout?: () => void;
+  onDeleteAccount?: () => void;
+  onEditProfile?: () => void;
 }
 
 const UserCard: React.FC<UserCardProps> = ({

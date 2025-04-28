@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import UserCard from '../components/UserCard'; // Компонент карточки пользователя
+import '../styles/wheel.css'; // Импортируем стили для колесика
 
 interface User {
   username: string;
@@ -10,14 +10,15 @@ interface User {
 }
 
 const HomePage = () => {
-  const navigate = useNavigate();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [totalUsers, setTotalUsers] = useState(0);
-  const [selectedUserIndex, setSelectedUserIndex] = useState<number | null>(null); // Состояние для выбранной карточки
-  const limit = 8; // Количество пользователей на страницу (обновлено для плитки)
+  const [selectedUserIndex, setSelectedUserIndex] = useState<number | null>(null);
+  const limit = 8;
+  const [wheelDirection, setWheelDirection] = useState<'up' | 'down' | null>(null); // Направление колесика
+  const [animateWheel, setAnimateWheel] = useState(false); // Состояние для анимации колесика
 
   const fetchUsers = async (page: number) => {
     setLoading(true);
@@ -44,30 +45,53 @@ const HomePage = () => {
 
   const handleNextPage = () => {
     if (page < Math.ceil(totalUsers / limit)) {
+      setWheelDirection('down');
+      setAnimateWheel(true); // Активируем анимацию при изменении страницы
       setPage((prevPage) => prevPage + 1);
     }
   };
 
   const handlePrevPage = () => {
     if (page > 1) {
+      setWheelDirection('up');
+      setAnimateWheel(true); // Активируем анимацию при изменении страницы
       setPage((prevPage) => prevPage - 1);
     }
   };
 
   const handleCardClick = (index: number) => {
     if (selectedUserIndex === index) {
-      setSelectedUserIndex(null); // Если кликаем на уже выбранную карточку, сбрасываем выбор
+      setSelectedUserIndex(null);
     } else {
-      setSelectedUserIndex(index); // Выбираем новую карточку
+      setSelectedUserIndex(index);
     }
   };
 
-  // Функция для формирования URL фото
-  const getPhotoUrl = (photo_filename: string) => {
-    return photo_filename
-      ? `${api.defaults.baseURL}/uploads/${photo_filename}`
-      : '/default-avatar.png'; // Путь к дефолтному фото
-  };
+  // Обработчик событий клавиш
+  useEffect(() => {
+    const handleKeydown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+        handlePrevPage();
+      } else if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+        handleNextPage();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeydown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeydown);
+    };
+  }, [page, totalUsers]);
+
+  useEffect(() => {
+    // После изменения страницы анимация должна завершиться, так как состояние wheelDirection изменяется
+    const timer = setTimeout(() => {
+      setAnimateWheel(false); // Останавливаем анимацию после её завершения
+    }, 600); // Продолжительность анимации в 600ms
+
+    return () => clearTimeout(timer);
+  }, [page]);
 
   if (loading && page === 1) {
     return <div>Загрузка...</div>;
@@ -88,10 +112,10 @@ const HomePage = () => {
             key={index}
             className={`transition-all duration-500 transform perspective-1000 ${
               selectedUserIndex === index
-                ? 'scale-110 z-50 rotate-y-180' // Переворачиваем выбранную карточку
-                : 'opacity-100' // Все остальные карточки без размытия
-            } ${selectedUserIndex !== null && selectedUserIndex !== index ? 'opacity-70 blur-sm' : ''}`} // Размываем все карточки, кроме выбранной
-            onClick={() => handleCardClick(index)} // Обработчик клика
+                ? 'scale-110 z-50 rotate-y-180'
+                : 'opacity-100'
+            } ${selectedUserIndex !== null && selectedUserIndex !== index ? 'opacity-70 blur-sm' : ''}`}
+            onClick={() => handleCardClick(index)}
           >
             <div
               className={`card-inner ${selectedUserIndex === index ? 'rotate-y-180' : ''} transition-transform duration-500`}
@@ -106,27 +130,28 @@ const HomePage = () => {
         ))}
       </div>
 
-      {/* Кнопки навигации */}
-      <div className="flex justify-between mt-6">
-        <button
-          onClick={handlePrevPage}
-          disabled={page === 1}
-          className="bg-blue-500 text-white px-4 py-2 rounded"
-        >
-          &#8593;
-        </button>
-
-        <span className="self-center">
-          Страница {page} / {Math.ceil(totalUsers / limit)}
-        </span>
-
-        <button
-          onClick={handleNextPage}
-          disabled={page === Math.ceil(totalUsers / limit)}
-          className="bg-blue-500 text-white px-4 py-2 rounded"
-        >
-          &#8595;
-        </button>
+      {/* Элемент с анимацией колеса */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white p-4 flex justify-center items-center border-t border-gray-200">
+        <div className="relative overflow-hidden w-20 h-10 flex justify-center items-center">
+          <div className="wheel-container">
+            {wheelDirection === 'up' && animateWheel && (
+              <div className="wheel wheel-up wheel-up-transition">
+                {page}
+              </div>
+            )}
+            {wheelDirection === 'down' && animateWheel && (
+              <div className="wheel wheel-down wheel-down-transition">
+                {page}
+              </div>
+            )}
+            {/* Если анимация закончена, то просто показываем число */}
+            {!animateWheel && (
+              <div className="wheel">
+                {page}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
