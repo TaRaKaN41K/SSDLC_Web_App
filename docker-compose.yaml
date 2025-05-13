@@ -1,0 +1,57 @@
+services:
+  db:
+    image: postgres:14
+    container_name: ssdlc-db
+    env_file:
+      - .env
+    ports:
+      - "5435:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/migration:/migration
+    networks:
+      - ssdlc-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    container_name: ssdlc-backend
+    env_file:
+      - ./backend/.env
+    volumes:
+      - ./backend/uploads:/app/uploads
+      - ./backend/logs:/app/logs
+      - ./backend/certs:/app/certs
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - ssdlc-network
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    container_name: ssdlc-frontend
+    env_file:
+      - ./frontend/.env
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    networks:
+      - ssdlc-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  ssdlc-network:
+    driver: bridge
