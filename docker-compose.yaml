@@ -23,9 +23,7 @@ services:
     env_file:
       - ./backend/.env
     volumes:
-      - ./backend/uploads:/app/uploads
       - ./backend/logs:/app/logs
-      - ./backend/certs:/app/certs
     ports:
       - "8000:8000"
     depends_on:

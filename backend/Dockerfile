@@ -2,16 +2,17 @@ FROM python:3.12
 
 WORKDIR /app
 
-# Копируем зависимости отдельно для кэширования
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Копируем весь бэкенд
 COPY . .
 
-# Создаем директории для uploads и logs
-RUN mkdir -p /app/uploads /app/logs /app/certs
+RUN mkdir -p /app/uploads /app/logs
 RUN chmod -R 755 /app/uploads /app/logs
+
+RUN mkdir -p /app/certs && \
+    openssl genrsa -out /app/certs/jwt_private.pem 2048 && \
+    openssl rsa -in /app/certs/jwt_private.pem -outform PEM -pubout -out /app/certs/jwt_public.pem
 
 ENV PYTHONPATH=/app/src
 

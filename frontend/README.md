@@ -35,4 +35,9 @@ npm install @ant-design/icons
 npm install axios react-router-dom
 ```
 
+## Генерация сертификатов
+
+```commandline
+openssl req -x509 -newkey rsa:4096 -sha256 -days 365 -nodes -keyout selfsigned.key -out selfsigned.crt -subj "/CN=localhost"
+```
 
