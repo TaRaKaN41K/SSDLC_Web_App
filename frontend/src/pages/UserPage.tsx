@@ -92,3 +92,5 @@ const UserPage: React.FC = () => {
 };
 
 export default UserPage;
+
+// TODO: Добавить обработку того, если токена нет, то на логин вести
